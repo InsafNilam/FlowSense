@@ -16,8 +16,12 @@ class DatabaseSeeder extends Seeder
         // User::factory(10)->create();
 
         User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+            'name' => 'Admin',
+            'email' => 'admin@flowsense.com',
+            'password' => bcrypt('321.123A'),
+            'role' => 'admin'
         ]);
+
+        $this->call([CustomerSeeder::class, WaterBillSeeder::class, WaterBillUnitSeeder::class]);
     }
 }
