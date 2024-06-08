@@ -23,12 +23,10 @@ class UpdateCustomerRequest extends FormRequest
     {
         return [
             //
-            'bill_no' => 'required|integer',
-            'bill_date' => 'required|date',
-            'due_date' => 'required|date',
-            'bill_amount' => 'required|numeric|min:0',
-            'status' => 'required|in:unpaid,paid',
-            'user_id' => 'required|exists:users,id',
+            'address' => 'required|string',
+            'username' => 'required|unique:customers,username',
+            'bill_no' => 'required|unique:customers,bill_no',
+            'user_id' => 'required|exists:users,id'
         ];
     }
 }

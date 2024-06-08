@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\WaterBillResource;
 use App\Models\WaterBill;
 use App\Http\Requests\StoreWaterBillRequest;
 use App\Http\Requests\UpdateWaterBillRequest;
@@ -17,10 +18,17 @@ class WaterBillController extends Controller
         //
         $response = Gate::inspect('viewAny', WaterBill::class);
         if ($response->allowed()) {
-            $waterBills = WaterBill::query()->paginate(10)->onEachSide(1);
+            if (auth()->user()->role == 'admin') {
+                $water_bills = WaterBill::query()->paginate(10)->onEachSide(1);
+            } else {
+                $water_bills = WaterBill::query()->where('user_id', auth()->id())->paginate(10)->onEachSide(1);
+            }
+            $water_bills = WaterBill::query()->paginate(10)->onEachSide(1);
+            $links = $water_bills->links();
 
             return view('water-bill.index', [
-                'waterBills' => $waterBills,
+                'water_bills' => WaterBillResource::collection($water_bills),
+                'links' => $links,
             ]);
         } else {
             abort(403, $response->message());
@@ -65,7 +73,7 @@ class WaterBillController extends Controller
         $response = Gate::inspect('view', $waterBill);
         if ($response->allowed()) {
             return view('water-bill.show', [
-                'waterBill' => $waterBill,
+                'water_bill' => new WaterBillResource($waterBill),
             ]);
         } else {
             abort(403, $response->message());
@@ -81,7 +89,7 @@ class WaterBillController extends Controller
         $response = Gate::inspect('update', $waterBill);
         if ($response->allowed()) {
             return view('water-bill.edit', [
-                'waterBill' => $waterBill,
+                'water_bill' => $waterBill,
             ]);
         } else {
             abort(403, $response->message());

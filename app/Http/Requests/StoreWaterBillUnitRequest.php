@@ -25,7 +25,7 @@ class StoreWaterBillUnitRequest extends FormRequest
             'fixed_charge' => ['required', 'numeric', 'between:0,999999.99'],
             'per_unit_charge' => ['required', 'numeric', 'between:0,999999.99'],
             'min_units' => ['required', 'numeric', 'between:0,999999.99'],
-            'max_units' => ['nullable', 'numeric', 'between:0,999999.99'],
+            'max_units' => ['nullable', 'numeric', 'between:0,999999.99', 'gt:min_units'],
             'created_by' => ['required', 'exists:users,id'],
             'updated_by' => ['required', 'exists:users,id'],
         ];

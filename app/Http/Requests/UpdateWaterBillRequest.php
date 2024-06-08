@@ -23,8 +23,9 @@ class UpdateWaterBillRequest extends FormRequest
     {
         return [
             //
+            'bill_no' => 'required|integer',
             'bill_date' => 'required|date',
-            'due_date' => 'required|date',
+            'due_date' => 'required|date|after_or_equal:' . now()->addMonth()->format('Y-m-d'),
             'bill_amount' => 'required|numeric|min:0',
             'status' => 'required|in:unpaid,paid',
             'user_id' => 'required|exists:users,id',

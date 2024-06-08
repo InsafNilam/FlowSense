@@ -17,7 +17,7 @@ return new class extends Migration {
             $table->date('due_date');
             $table->decimal('bill_amount', 8, 2);
             $table->enum('status', ['unpaid', 'paid'])->default('unpaid');
-            $table->foreignId('user_id')->nullable()->constrained('users');
+            $table->foreignId('user_id')->nullable()->constrained('customers');
             $table->timestamps();
         });
     }

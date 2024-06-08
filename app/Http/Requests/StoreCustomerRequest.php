@@ -22,7 +22,6 @@ class StoreCustomerRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string',
             'address' => 'required|string',
             'username' => 'required|unique:customers,username',
             'bill_no' => 'required|unique:customers,bill_no',

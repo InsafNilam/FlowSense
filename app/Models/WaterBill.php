@@ -17,9 +17,9 @@ class WaterBill extends Model
         'status',
     ];
 
-    public function user()
+    public function customer()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(Customer::class, 'user_id');
     }
 
 

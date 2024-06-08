@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\WaterBillUnitResource;
 use App\Models\WaterBillUnit;
 use App\Http\Requests\StoreWaterBillUnitRequest;
 use App\Http\Requests\UpdateWaterBillUnitRequest;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 
 class WaterBillUnitController extends Controller
@@ -17,10 +19,12 @@ class WaterBillUnitController extends Controller
         //
         $response = Gate::inspect('viewAny', WaterBillUnit::class);
         if ($response->allowed()) {
-            $waterBillUnits = WaterBillUnit::query()->paginate(10)->onEachSide(1);
+            $water_bill_units = WaterBillUnit::query()->paginate(10)->onEachSide(1);
+            $links = $water_bill_units->links();
 
             return view('water-bill-unit.index', [
-                'waterBillUnits' => $waterBillUnits,
+                'water_bill_units' => WaterBillUnitResource::collection($water_bill_units),
+                'links' => $links,
             ]);
         } else {
             abort(403, $response->message());
@@ -49,7 +53,11 @@ class WaterBillUnitController extends Controller
         //
         $response = Gate::inspect('create', WaterBillUnit::class);
         if ($response->allowed()) {
-            WaterBillUnit::create($request->validated());
+            $data = $request->validated();
+            $data['created_by'] = Auth::id();
+            $data['updated_by'] = Auth::id();
+
+            WaterBillUnit::create($data);
             return redirect()->route('water-bill-unit.index')->with('success', 'Water bill unit created successfully');
         } else {
             abort(403, $response->message());
@@ -65,7 +73,7 @@ class WaterBillUnitController extends Controller
         $response = Gate::inspect('view', $waterBillUnit);
         if ($response->allowed()) {
             return view('water-bill-unit.show', [
-                'waterBillUnit' => $waterBillUnit,
+                'water_bill_unit' => new WaterBillUnitResource($waterBillUnit),
             ]);
         } else {
             abort(403, $response->message());
@@ -96,7 +104,10 @@ class WaterBillUnitController extends Controller
         //
         $response = Gate::inspect('update', $waterBillUnit);
         if ($response->allowed()) {
-            $waterBillUnit->update($request->validated());
+            $data = $request->validated();
+            $data['updated_by'] = Auth::id();
+
+            $waterBillUnit->update($data);
             return redirect()->route('water-bill-unit.index')->with('success', 'Water bill unit updated successfully');
         } else {
             abort(403, $response->message());

@@ -2,13 +2,47 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\CustomerResource;
 use App\Models\Customer;
 use App\Http\Requests\StoreCustomerRequest;
 use App\Http\Requests\UpdateCustomerRequest;
+use App\Models\WaterBillUnit;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
 class CustomerController extends Controller
 {
+    public function calculate(Request $request)
+    {
+        $range = WaterBillUnit::all();
+
+        $unit = $request->input('units');
+        $cost = $this->calculateTotalCost($unit, $range);
+
+        return view('dashboard', compact('unit', 'cost'));
+    }
+
+    private function calculateTotalCost($units, $ranges)
+    {
+        $remainingUnits = $units;
+        $totalCost = 0;
+
+        foreach ($ranges as $range) {
+            $rangeStart = $range['min_units'];
+            $rangeEnd = $range['max_units'];
+            $perUnitRate = $range['per_unit_rate'];
+            $fixedRate = $range['fixed_rate'];
+
+            if ($remainingUnits > 0) {
+                $unitsInRange = min($remainingUnits, $rangeEnd - $rangeStart);
+                $cost = ($unitsInRange * $perUnitRate) + $fixedRate;
+                $totalCost += $cost;
+                $remainingUnits -= $unitsInRange;
+            }
+        }
+
+        return $totalCost;
+    }
     /**
      * Display a listing of the resource.
      */
@@ -19,39 +53,12 @@ class CustomerController extends Controller
         if ($response->allowed()) {
             $customers = Customer::query()->paginate(10)->onEachSide(1);
 
+            $links = $customers->links();
+
             return view('customer.index', [
-                'customers' => $customers,
+                'customers' => CustomerResource::collection($customers),
+                'links' => $links,
             ]);
-        } else {
-            abort(403, $response->message());
-        }
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-        $response = Gate::inspect('create', Customer::class);
-        if ($response->allowed()) {
-            return view('customer.create');
-        } else {
-            abort(403, $response->message());
-        }
-
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreCustomerRequest $request)
-    {
-        //
-        $response = Gate::inspect('create', Customer::class);
-        if ($response->allowed()) {
-            Customer::create($request->validated());
-            return redirect()->route('customer.index')->with('success', 'Customer created successfully');
         } else {
             abort(403, $response->message());
         }
@@ -66,7 +73,7 @@ class CustomerController extends Controller
         $response = Gate::inspect('view', $customer);
         if ($response->allowed()) {
             return view('customer.show', [
-                'customer' => $customer,
+                'customer' => new CustomerResource($customer),
             ]);
         } else {
             abort(403, $response->message());
