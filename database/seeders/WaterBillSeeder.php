@@ -24,7 +24,7 @@ class WaterBillSeeder extends Seeder
                     'bill_no' => $billNo,
                     'bill_date' => now()->addMonths($i),
                     'due_date' => now()->subMonths(1),
-                    'user_id' => $customer->id,
+                    'user_id' => $customer->user_id,
                 ]);
             }
         }
